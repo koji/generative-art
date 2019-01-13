@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>shader04</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+    <script src="../lib/stats.min.js"></script>
+    <script src="../lib/dat.gui.min.js"></script>
+    <script src="../lib/three.min.js"></script>
+
+    <script id="vertexShader" type="x-shader/x-vertex">
+            //uniform float floatVal1;
+            void main() {
+                //vUv = uv;
+                //val1 = floatVal1;
+                gl_Position = vec4( position, 1.0 );
+            }
+        </script>
+    <script id="fragmentShader" type="x-shader/x-fragment">
+            uniform float u_time;
+            uniform vec2 u_resolution;
+            uniform float u_slider1;
+            uniform float u_slider2;
+            uniform float u_slider3;
+            uniform float u_slider4;
+            uniform float u_slider5;
+            uniform float u_slider6;
+
+            vec3 bgCol = vec3(u_slider1, u_slider2, u_slider3);
+            float sphereScale = 0.7 * (u_slider1 + u_slider2)/2.0;
+            float sphereShine = 0.5;
+            vec3 sphereDiff = vec3(0.5, 0.0, 0.5);
+            vec3 sphereSpec = vec3(1.0, 1.0, 1.0);
+            vec2 specPoint = vec2(0.2, -0.1);
+
+            vec2 rotate( vec2 matrix, float angle ) {
+                return vec2( matrix.x*cos(radians(angle)), matrix.x*sin(radians(angle)) ) + vec2( matrix.y*-sin(radians(angle)), matrix.y*cos(radians(angle)) );
+            }
+
+            void main(){
+                
+                vec2 uv = gl_FragCoord.xy/u_resolution.xy;
+
+                // camera position
+                vec2 p = uv * 2.3 - 1.0;
+                p.x *= u_resolution.x / u_resolution.y;
+
+                // rotation
+                p.x += cos(-u_time) * 0.35;
+                p.y += sin(-u_time) * 0.35;
+                
+                specPoint.x += cos(-u_time) * 0.35;
+                specPoint.y += sin(-u_time) * 0.35;
+                
+                float radius = sqrt(dot(p, p));
+
+                vec3 col = bgCol;
+	
+                float f = smoothstep(sphereScale * u_slider5, sphereScale, length(p + specPoint));
+                col -= mix(col, vec3(0.0), f) * u_slider4;
+                
+                if(radius < sphereScale) {
+                    vec3 bg = col;
+                    
+                    //Sets the diffuse colour of the sphere (solid colour)
+                    col = sphereDiff;
+                    
+                    //Adds smooth dark borders to help achieve 3D look
+                    f = smoothstep(sphereScale * 0.7, sphereScale, radius);
+                    col = mix(col, sphereDiff * 0.45, f);
+                    
+                    //Adds specular glow to help achive 3D look
+                    f = 1.0 - smoothstep(-0.2, 0.6, length(p - specPoint));
+                    col += f * sphereShine * sphereSpec;
+                    
+                    //Smoothes the edge of the sphere
+                    f = smoothstep(sphereScale - 0.01, sphereScale, radius);
+                    col = mix(col, bg, f);
+                }	
+                
+                //The final output of the shader logic above
+                //fragColor is a vector with 4 paramaters(red, green, blue, alpha)
+                //Only 2 need to be used here, as "col" is a vector that already carries r, g, and b values
+                gl_FragColor = vec4(col*u_slider6, 1);
+            }
+
+    </script>
+
+
+    <script src="./app.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>shader01</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+    <script src="../lib/stats.min.js"></script>
+    <script src="../lib/three.min.js"></script>
+
+    <script id="vertexShader" type="x-shader/x-vertex">
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = vec4( position, 1.0 );
+            }
+        </script>
+    <script id="fragmentShader" type="x-shader/x-fragment">
+            uniform float u_time;
+            uniform vec3 spectrum;
+            varying vec2 vUv; 
+
+            void main() {
+                vec2 uv = abs(-1. + 2. * vUv);
+                //vec2 uv = abs(-1. + 2. * pos;
+                float l = length(uv);
+                float a = atan(uv.y, uv.x);
+                float col = 0.4;
+                col += 1.5*sin(u_time + 13.0 * a + uv.y * 20.0);
+                col += cos(0.9 * uv.x * a * 60.0 + l * 5.0 - u_time * 2.0);
+                gl_FragColor = l * vec4(col);
+            }
+    </script>
+
+
+    <script>
+        let container;
+        let camera, scene, renderer;
+        let uniforms;
+
+        let stats = new Stats();
+        document.body.appendChild(stats.dom);
+
+        init();
+        animate();
+
+
+        function init() {
+            container = document.getElementById('container');
+            camera = new THREE.Camera();
+            camera.position.z = 1;
+
+            scene = new THREE.Scene();
+
+            let geometry = new THREE.PlaneBufferGeometry(2, 2);
+
+            uniforms = {
+                u_time: { type: 'f', value: 1.0 },
+                u_resolution: { type: 'v2', value: new THREE.Vector2() },
+                u_mouse: { type: 'v2', value: new THREE.Vector2() },
+                //v_texcoord: { type: 'v2', value: new THREE.Vector2() }
+                pos: { type: 'v2', value: new THREE.Vector2() }
+            }
+
+            var material = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('fragmentShader').textContent
+            });
+
+            var mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            container.appendChild(renderer.domElement);
+
+            onWindowResize();
+            window.addEventListener('resize', onWindowResize, false);
+
+            document.onmousemove = function (e) {
+                uniforms.u_mouse.value.x = e.pageX
+                uniforms.u_mouse.value.y = e.pageY
+            }
+        }
+
+        function onWindowResize(event) {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            uniforms.u_resolution.value.x = renderer.domElement.width;
+            uniforms.u_resolution.value.y = renderer.domElement.height;
+        }
+
+        function animate() {
+            stats.update();
+            requestAnimationFrame(animate);
+            render();
+        }
+
+        function render() {
+            uniforms.u_time.value += 0.05;
+            renderer.render(scene, camera);
+        }
+
+    </script>
+</body>
+
+</html>
