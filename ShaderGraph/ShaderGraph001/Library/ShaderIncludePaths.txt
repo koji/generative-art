@@ -1,0 +1,4 @@
+/Users/koji.kanao/Library/Unity/cache/packages/packages.unity.com/com.unity.postprocessing@2.0.9-preview
+/Users/koji.kanao/Library/Unity/cache/packages/packages.unity.com/com.unity.render-pipelines.core@3.0.0-preview
+/Users/koji.kanao/Library/Unity/cache/packages/packages.unity.com/com.unity.render-pipelines.lightweight@3.0.0-preview
+/Users/koji.kanao/Library/Unity/cache/packages/packages.unity.com/com.unity.shadergraph@3.0.0-preview
